@@ -56,6 +56,22 @@
         }
         .correct { color: #28a745; }
         .wrong { color: #dc3545; }
+        /* 新增发音样式 */
+        .pronunciation {
+            text-align: center;
+            margin: 15px 0;
+        }
+        .pronounce-btn {
+            background-color: #007AFF;
+            margin: 0 5px;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            color: white;
+        }
+        .pronounce-btn:hover {
+            background-color: #0063CC;
+        }
     </style>
 </head>
 <body>
@@ -63,6 +79,10 @@
         <div class="mode-switch">
             <button onclick="switchMode('en-to-ch')">英译中模式</button>
             <button onclick="switchMode('ch-to-en')">中译英模式</button>
+        </div>
+        <div class="pronunciation">
+            <button class="pronounce-btn" onclick="speak('chinese')">🔊 中文发音</button>
+            <button class="pronounce-btn" onclick="speak('english')">🔊 英文发音</button>
         </div>
         <div id="question"></div>
         <input type="text" id="answer" placeholder="输入你的答案...">
@@ -72,7 +92,7 @@
     </div>
 
     <script>
-        // 中英对照数据（来自PDF第8页）
+        // 中英对照数据
         const terms = [
             { chinese: "女子胞", english: "uterus" },
             { chinese: "呕吐", english: "vomiting" },
@@ -84,11 +104,11 @@
             { chinese: "皮部", english: "cutaneous region" },
             { chinese: "脾", english: "spleen" },
             { chinese: "脾气", english: "spleen qi" },
-            // 可根据需要继续添加更多术语...
         ];
 
         let currentMode = 'en-to-ch';
         let currentTerm = null;
+        const synth = window.speechSynthesis;
 
         function switchMode(mode) {
             currentMode = mode;
@@ -96,122 +116,45 @@
         }
 
         function newQuestion() {
+            synth.cancel(); // 切换题目时停止语音
             document.getElementById('feedback').innerHTML = '';
             document.getElementById('answer').value = '';
             currentTerm = terms[Math.floor(Math.random() * terms.length)];
             
-            if(currentMode === 'en-to-ch') {
-                document.getElementById('question').innerHTML = 
-                    `请翻译：<strong>${currentTerm.english}</strong>`;
-            } else {
-                document.getElementById('question').innerHTML = 
-                    `请翻译：<strong>${currentTerm.chinese}</strong>`;
-            }
+            const displayText = currentMode === 'en-to-ch' 
+                ? currentTerm.english 
+                : currentTerm.chinese;
+            document.getElementById('question').innerHTML = `请翻译：<strong>${displayText}</strong>`;
         }
 
         function checkAnswer() {
             const userAnswer = document.getElementById('answer').value.trim().toLowerCase();
             const feedbackEl = document.getElementById('feedback');
-            
-            let correctAnswer = '';
-            if(currentMode === 'en-to-ch') {
-                correctAnswer = currentTerm.chinese.toLowerCase();
-            } else {
-                correctAnswer = currentTerm.english.toLowerCase();
-            }
+            const correctAnswer = currentMode === 'en-to-ch' 
+                ? currentTerm.chinese.toLowerCase() 
+                : currentTerm.english.toLowerCase();
 
             if(userAnswer === correctAnswer) {
                 feedbackEl.innerHTML = "正确！✓";
                 feedbackEl.className = "correct";
             } else {
-                feedbackEl.innerHTML = `错误 ❌ 正确答案：${currentMode === 'en-to-ch' 
-                    ? currentTerm.chinese 
-                    : currentTerm.english}`;
+                feedbackEl.innerHTML = `错误 ❌ 正确答案：${correctAnswer}`;
                 feedbackEl.className = "wrong";
             }
         }
 
-        // 初始化第一题
-        newQuestion();
-    </script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <title>中医术语练习</title>
-    <style>
-        /* 原有样式保持不变... */
-        
-        /* 新增发音相关样式 */
-        .pronunciation {
-            text-align: center;
-            margin: 15px 0;
-        }
-        .pronounce-btn {
-            background-color: #007AFF;
-            margin: 0 5px;
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-size: 14px;
-        }
-        .pronounce-btn:hover {
-            background-color: #0063CC;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <!-- 原有结构保持不变... -->
-        
-        <!-- 新增发音按钮 -->
-        <div class="pronunciation">
-            <button class="pronounce-btn" onclick="speak('chinese')">🔊 中文发音</button>
-            <button class="pronounce-btn" onclick="speak('english')">🔊 英文发音</button>
-        </div>
-
-        <div id="question"></div>
-        <!-- 其他原有元素保持不变... -->
-    </div>
-
-    <script>
-        // 原有数据保持不变...
-        
-        // 新增语音合成功能
-        let synth = window.speechSynthesis;
-        
         function speak(lang) {
-            if (!currentTerm) return;
+            if (!currentTerm || synth.speaking) return;
             
             const utterance = new SpeechSynthesisUtterance();
-            utterance.volume = 1; // 0-1
-            utterance.rate = 0.9; // 0.1-10
-            utterance.pitch = 1; // 0-2
-
-            // 设置发音内容
-            if(lang === 'chinese') {
-                utterance.text = currentTerm.chinese;
-                utterance.lang = 'zh-CN'; // 设置中文发音
-            } else {
-                utterance.text = currentTerm.english;
-                utterance.lang = 'en-US'; // 设置英文发音
-            }
-
-            // 停止当前正在播放的语音
-            synth.cancel();
-            
-            // 处理浏览器兼容性
-            if (synth.speaking) {
-                console.error('正在播放语音...');
-                return;
-            }
-
-            // 开始播放
+            utterance.text = lang === 'chinese' ? currentTerm.chinese : currentTerm.english;
+            utterance.lang = lang === 'chinese' ? 'zh-CN' : 'en-US';
+            utterance.rate = 0.9;
             synth.speak(utterance);
         }
 
-        // 原有函数保持不变...
+        // 初始化
+        newQuestion();
     </script>
 </body>
 </html>
