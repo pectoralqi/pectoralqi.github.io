@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>中医术语练习</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f0f8ff;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .mode-switch {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #question {
+            font-size: 24px;
+            margin: 20px 0;
+            text-align: center;
+            color: #333;
+        }
+        input[type="text"] {
+            width: 300px;
+            padding: 12px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            display: block;
+            margin: 10px auto;
+        }
+        #feedback {
+            text-align: center;
+            min-height: 30px;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+        .correct { color: #28a745; }
+        .wrong { color: #dc3545; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="mode-switch">
+            <button onclick="switchMode('en-to-ch')">英译中模式</button>
+            <button onclick="switchMode('ch-to-en')">中译英模式</button>
+        </div>
+        <div id="question"></div>
+        <input type="text" id="answer" placeholder="输入你的答案...">
+        <button onclick="checkAnswer()">提交答案</button>
+        <button onclick="newQuestion()">下一题</button>
+        <div id="feedback"></div>
+    </div>
+
+    <script>
+        // 中英对照数据（来自PDF第8页）
+        const terms = [
+            { chinese: "女子胞", english: "uterus" },
+            { chinese: "呕吐", english: "vomiting" },
+            { chinese: "膀胱", english: "bladder" },
+            { chinese: "胖大舌", english: "enlarged tongue" },
+            { chinese: "炮制", english: "processing of materia medica" },
+            { chinese: "配伍", english: "combination of medicinals" },
+            { chinese: "配伍禁忌", english: "prohibited combination" },
+            { chinese: "皮部", english: "cutaneous region" },
+            { chinese: "脾", english: "spleen" },
+            { chinese: "脾气", english: "spleen qi" },
+            // 可根据需要继续添加更多术语...
+        ];
+
+        let currentMode = 'en-to-ch';
+        let currentTerm = null;
+
+        function switchMode(mode) {
+            currentMode = mode;
+            newQuestion();
+        }
+
+        function newQuestion() {
+            document.getElementById('feedback').innerHTML = '';
+            document.getElementById('answer').value = '';
+            currentTerm = terms[Math.floor(Math.random() * terms.length)];
+            
+            if(currentMode === 'en-to-ch') {
+                document.getElementById('question').innerHTML = 
+                    `请翻译：<strong>${currentTerm.english}</strong>`;
+            } else {
+                document.getElementById('question').innerHTML = 
+                    `请翻译：<strong>${currentTerm.chinese}</strong>`;
+            }
+        }
+
+        function checkAnswer() {
+            const userAnswer = document.getElementById('answer').value.trim().toLowerCase();
+            const feedbackEl = document.getElementById('feedback');
+            
+            let correctAnswer = '';
+            if(currentMode === 'en-to-ch') {
+                correctAnswer = currentTerm.chinese.toLowerCase();
+            } else {
+                correctAnswer = currentTerm.english.toLowerCase();
+            }
+
+            if(userAnswer === correctAnswer) {
+                feedbackEl.innerHTML = "正确！✓";
+                feedbackEl.className = "correct";
+            } else {
+                feedbackEl.innerHTML = `错误 ❌ 正确答案：${currentMode === 'en-to-ch' 
+                    ? currentTerm.chinese 
+                    : currentTerm.english}`;
+                feedbackEl.className = "wrong";
+            }
+        }
+
+        // 初始化第一题
+        newQuestion();
+    </script>
+</body>
+</html>
