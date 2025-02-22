@@ -136,3 +136,82 @@
     </script>
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>中医术语练习</title>
+    <style>
+        /* 原有样式保持不变... */
+        
+        /* 新增发音相关样式 */
+        .pronunciation {
+            text-align: center;
+            margin: 15px 0;
+        }
+        .pronounce-btn {
+            background-color: #007AFF;
+            margin: 0 5px;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        .pronounce-btn:hover {
+            background-color: #0063CC;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 原有结构保持不变... -->
+        
+        <!-- 新增发音按钮 -->
+        <div class="pronunciation">
+            <button class="pronounce-btn" onclick="speak('chinese')">🔊 中文发音</button>
+            <button class="pronounce-btn" onclick="speak('english')">🔊 英文发音</button>
+        </div>
+
+        <div id="question"></div>
+        <!-- 其他原有元素保持不变... -->
+    </div>
+
+    <script>
+        // 原有数据保持不变...
+        
+        // 新增语音合成功能
+        let synth = window.speechSynthesis;
+        
+        function speak(lang) {
+            if (!currentTerm) return;
+            
+            const utterance = new SpeechSynthesisUtterance();
+            utterance.volume = 1; // 0-1
+            utterance.rate = 0.9; // 0.1-10
+            utterance.pitch = 1; // 0-2
+
+            // 设置发音内容
+            if(lang === 'chinese') {
+                utterance.text = currentTerm.chinese;
+                utterance.lang = 'zh-CN'; // 设置中文发音
+            } else {
+                utterance.text = currentTerm.english;
+                utterance.lang = 'en-US'; // 设置英文发音
+            }
+
+            // 停止当前正在播放的语音
+            synth.cancel();
+            
+            // 处理浏览器兼容性
+            if (synth.speaking) {
+                console.error('正在播放语音...');
+                return;
+            }
+
+            // 开始播放
+            synth.speak(utterance);
+        }
+
+        // 原有函数保持不变...
+    </script>
+</body>
+</html>
